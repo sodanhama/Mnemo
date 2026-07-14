@@ -21,12 +21,27 @@ async function generateFlashcards(topic) {
 inputField.addEventListener("keypress", async function(event) {
     if (event.key === "Enter") {
         event.preventDefault();
+        inputField.blur()
+        inputField.disabled = true;
         try {
             const flashcards = await generateFlashcards(inputField.value.trim());
             console.log(flashcards);
             console.log(flashcards.choices[0].message.content)
+            for (const flashcard of JSON.parse(flashcards.choices[0].message.content)) {
+                console.log(flashcard);}
+            inputField.value = ""
+            inputField.disabled = false;
         } catch (error) {
-            console.error("Error generating flashcards:", error);
+            alert("Error generating flashcards: " + error.message);
+            inputField.disabled = false;
         }
     }
 });
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "/" && document.activeElement !== inputField) {
+        event.preventDefault();
+        inputField.focus();
+        inputField.value = "";
+    }
+})

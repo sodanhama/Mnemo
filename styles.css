@@ -31,6 +31,12 @@ input {
     text-align: center;
     padding-top: 1rem;
     padding-bottom: 1rem;
+    box-shadow: 0.25rem 0.25rem 0px 0.05rem #fff;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: 0.125rem 0.125rem 0px 0.05rem #fff;
 }
 
 input::-webkit-input-placeholder{
