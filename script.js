@@ -1,4 +1,27 @@
-inputField = document.getElementById("input-field");
+import { db } from "./db.js";
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+async function saveDeck(topic, cards) {
+    const deckRef = await addDoc(collection(db, "decks"), {
+        topic,
+        createdAt: serverTimestamp()
+    });
+    
+    for (const card of cards) {
+        await addDoc(collection(db, "decks", deckRef.id, "cards"), {
+            front: card.front,
+            back: card.back,
+            interval: 0,
+            repetition: 0,
+            easeFactor: 2.5,
+            createdAt: serverTimestamp()
+        })
+    }
+
+    return deckRef.id;
+}
+
+const inputField = document.getElementById("input-field");
 
 async function generateFlashcards(topic) {
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
@@ -7,9 +30,9 @@ async function generateFlashcards(topic) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model: "poolside/laguna-xs-2.1:free",
+            model: "cohere/north-mini-code:free",
             messages:[
-                { role: "system", content: "You generate flashcard Q&A pairs as strict JSON arrays." },
+                { role: "system", content: "You generate flashcards. Respond ONLY with a JSON array like: [{\"front\":\"question text\",\"back\":\"answer text\"}]. No markdown, no explanation, no extra keys." },
                 { role: "user", content: `Generate 10 flashcards about: ${topic}` }
             ]
         })
@@ -24,12 +47,12 @@ inputField.addEventListener("keypress", async function(event) {
         inputField.blur()
         inputField.disabled = true;
         try {
-            const flashcards = await generateFlashcards(inputField.value.trim());
-            console.log(flashcards);
-            console.log(flashcards.choices[0].message.content)
-            for (const flashcard of JSON.parse(flashcards.choices[0].message.content)) {
-                console.log(flashcard);}
-            inputField.value = ""
+            const topic = inputField.value.trim();
+            const flashcards = await generateFlashcards(topic);
+            const cards = JSON.parse(flashcards.choices[0].message.content);
+            const deckId = await saveDeck(topic, cards);
+            console.log("Deck saved:", deckId);
+            inputField.value = "";
             inputField.disabled = false;
         } catch (error) {
             alert("Error generating flashcards: " + error.message);
