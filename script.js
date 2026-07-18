@@ -1,5 +1,6 @@
 import { db } from "./db.js";
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, addDoc, collectionGroup, query, where, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { sm2 } from "./sm2.js";
 
 async function saveDeck(topic, cards) {
     const deckRef = await addDoc(collection(db, "decks"), {
@@ -14,6 +15,7 @@ async function saveDeck(topic, cards) {
             interval: 0,
             repetition: 0,
             easeFactor: 2.5,
+            dueDate: serverTimestamp(),
             createdAt: serverTimestamp()
         })
     }
@@ -68,3 +70,75 @@ document.addEventListener("keydown", function(event) {
         inputField.value = "";
     }
 })
+
+let dueCards = [];
+let currentCardIndex = 0;
+
+async function getDueCards() {
+    const now = new Date();
+    const q = query(collectionGroup(db, "cards"), where("dueDate", "<=", now));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ref: docSnap.ref,
+        ...docSnap.data()
+    }))
+}
+
+async function startReview() {
+    dueCards = await getDueCards();
+    currentCardIndex = 0;
+
+    document.getElementById("input-container").style.display = "none";
+    document.getElementById("start-review-button").style.display = "none";
+    document.getElementById("review-container").style.display = "block";
+
+    showCard();
+}
+
+function showCard() {
+    const status = document.getElementById("review-status");
+
+    if (currentCardIndex >= dueCards.length) {
+        document.getElementById("card-front").textContent = "";
+        document.getElementById("card-back").style.display = "none";
+        document.getElementById("show-answer-button").style.display = "none";
+        document.getElementById("grade-buttons").style.display = "none";
+        status.textContent = "Review complete!";
+        return;
+   }
+
+   const card = dueCards[currentCardIndex];
+   document.getElementById("card-front").textContent = card.front;
+   document.getElementById("card-back").textContent = card.back;
+   document.getElementById("card-back").style.display = "none";
+   document.getElementById("show-answer-button").style.display = "inline-block";
+   document.getElementById("grade-buttons").style.display = "none";
+   status.textContent = `Card ${currentCardIndex + 1} of ${dueCards.length}`;
+}
+
+document.getElementById("show-answer-button").addEventListener("click", function() {
+    document.getElementById("card-back").style.display = "block";
+    document.getElementById("show-answer-button").style.display = "none";
+    document.getElementById("grade-buttons").style.display = "block";
+})
+
+document.getElementById("grade-buttons").addEventListener("click", async function(event) {
+    if (event.target.tagName !== "BUTTON") return;
+    
+    const quality = parseInt(event.target.dataset.quality);
+    const card = dueCards[currentCardIndex];
+    const updated = sm2(card, quality);
+
+    await updateDoc(card.ref, {
+        interval: updated.interval,
+        repetition: updated.repetition,
+        easeFactor: updated.easeFactor,
+        dueDate: updated.dueDate
+    })
+
+    currentCardIndex++
+    showCard()
+})
+
+document.getElementById("start-review-button").addEventListener("click", startReview);

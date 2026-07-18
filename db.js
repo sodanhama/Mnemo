@@ -3,7 +3,7 @@ import { getFirestore, collection, addDoc, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDYbUboQVYqv7ofI8VZmjAZE0vijDclH-M",
+    apiKey: "AIzaSyDYbUboQVYqv7ofI8VZmjAZE0vijDclH-M", /* afaik i dont need to secure this??? */
     authDomain: "mnemo-8c588.firebaseapp.com",
     projectId: "mnemo-8c588",
     storageBucket: "mnemo-8c588.firebasestorage.app",

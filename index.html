@@ -16,6 +16,21 @@
             <input type="text" id="input-field" placeholder="press slash and start learning">
         </div>
         <br>
+
+        <button id="start-review-button">Start Review</button>
+
+        <div id="review-container" style="display:none;">
+            <p id="card-front"></p>
+            <p id="card-back" style="display:none;"></p>
+            <button id="show-answer-button">Show Answer</button>
+            <div id="grade-buttons" style="display:none;">
+                <button data-quality="0">Again</button>
+                <button data-quality="3">Hard</button>
+                <button data-quality="4">Good</button>
+                <button data-quality="5">Easy</button>
+            </div>
+            <p id="review-status"></p>
+        </div>
     </div>
     <footer>
         <p>Made by sodanhama</p>
