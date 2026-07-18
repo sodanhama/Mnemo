@@ -22,7 +22,7 @@ footer {
 
 input {
     color: #cbcdcc;
-    background-color: #888098;
+    background-color: #856084;
     border-radius: 0.5rem;
     border: none;
     padding: 0.5rem;
@@ -43,6 +43,17 @@ input::-webkit-input-placeholder{
     color: #cbcdcc; /* safari yayay */
 }
 
+#start-review-button, #grade-buttons button {
+    background-color: #856084;
+    color: #F2F4F3;
+    border-radius: 0.5rem;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0.25rem 0.25rem 0px 0.05rem #fff;
+}
+
 #review-container {
     background-color: #856084;
     display: flex;
@@ -54,4 +65,27 @@ input::-webkit-input-placeholder{
 #card-front {
     background-color: #856084;
     text-align: center;
+}
+
+#review-status {
+    background-color: #856084;
+    text-align: right;
+}
+
+#card-front {
+    background-color: #856084;
+}
+
+#card-back {
+    background-color: #856084;
+}
+
+#grade-buttons {
+    background-color: #856084;
+}
+
+#or {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

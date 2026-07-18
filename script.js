@@ -92,6 +92,7 @@ async function startReview() {
     document.getElementById("input-container").style.display = "none";
     document.getElementById("start-review-button").style.display = "none";
     document.getElementById("review-container").style.display = "block";
+    document.getElementById("or").style.display = "none";
 
     showCard();
 }
@@ -102,8 +103,9 @@ function showCard() {
     if (currentCardIndex >= dueCards.length) {
         document.getElementById("card-front").textContent = "";
         document.getElementById("card-back").style.display = "none";
-        document.getElementById("show-answer-button").style.display = "none";
         document.getElementById("grade-buttons").style.display = "none";
+        document.getElementById('or').style.display = "flex";
+        document.getElementById('input-container').style.display = "flex";
         status.textContent = "Review complete!";
         return;
    }
@@ -112,14 +114,13 @@ function showCard() {
    document.getElementById("card-front").textContent = card.front;
    document.getElementById("card-back").textContent = card.back;
    document.getElementById("card-back").style.display = "none";
-   document.getElementById("show-answer-button").style.display = "inline-block";
    document.getElementById("grade-buttons").style.display = "none";
    status.textContent = `Card ${currentCardIndex + 1} of ${dueCards.length}`;
 }
 
-document.getElementById("show-answer-button").addEventListener("click", function() {
+document.getElementById("review-container").addEventListener("click", function() {
+    if (currentCardIndex >= dueCards.length) return;
     document.getElementById("card-back").style.display = "block";
-    document.getElementById("show-answer-button").style.display = "none";
     document.getElementById("grade-buttons").style.display = "block";
 })
 
@@ -140,5 +141,6 @@ document.getElementById("grade-buttons").addEventListener("click", async functio
     currentCardIndex++
     showCard()
 })
+
 
 document.getElementById("start-review-button").addEventListener("click", startReview);
