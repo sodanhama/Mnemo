@@ -42,3 +42,16 @@ input:focus {
 input::-webkit-input-placeholder{
     color: #cbcdcc; /* safari yayay */
 }
+
+#review-container {
+    background-color: #856084;
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 0.125rem solid #fff;
+}
+#card-front {
+    background-color: #856084;
+    text-align: center;
+}
