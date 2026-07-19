@@ -17,25 +17,25 @@ export default {
     try {
       const body = await request.json();
 
-      //const aiResponse = await fetch("https://ai.hackclub.com/proxy/v1/chat/completions", {
-      //  method: "POST",
-      //  headers: {
-      //    "Content-Type": "application/json",
-      //    "Authorization": `Bearer ${env.HACKCLUB_API_KEY}`,
-      //  },
-      //  body: JSON.stringify(body),
-      //});
-
-      const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const aiResponse = await fetch("https://ai.hackclub.com/proxy/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
-          "HTTP-Referer": "https://sodanhama.github.io/Mnemo",
-          "X-Title": "Mnemo",
+          "Authorization": `Bearer ${env.HACKCLUB_API_KEY}`,
         },
         body: JSON.stringify(body)
-      })
+      });
+
+      //const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      //  method: "POST",
+      //  headers: {
+      //    "Content-Type": "application/json",
+      //    "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
+      //    "HTTP-Referer": "https://sodanhama.github.io/Mnemo",
+      //    "X-Title": "Mnemo",
+      //  },
+      //  body: JSON.stringify(body)
+      // })
 
       const data = await aiResponse.json();
 

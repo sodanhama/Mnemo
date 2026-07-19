@@ -2,6 +2,10 @@ import { db } from "./db.js";
 import { collection, addDoc, collectionGroup, query, where, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { sm2 } from "./sm2.js";
 
+const model = "cohere/north-mini-code:free";
+/* 
+"anthropic/claude-haiku-4.5"
+*/
 async function saveDeck(topic, cards) {
     const deckRef = await addDoc(collection(db, "decks"), {
         topic,
@@ -23,7 +27,6 @@ async function saveDeck(topic, cards) {
     return deckRef.id;
 }
 
-const inputField = document.getElementById("input-field");
 const askMnemoField = document.getElementById("ask-mnemo-field");
 
 async function generateFlashcards(topic) {
@@ -33,7 +36,7 @@ async function generateFlashcards(topic) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model: "cohere/north-mini-code:free",
+            model: model,
             messages:[
                 { role: "system", content: "You generate flashcards. Respond ONLY with a JSON array like: [{\"front\":\"question text\",\"back\":\"answer text\"}]. No markdown, no explanation, no extra keys." },
                 { role: "user", content: `Generate 10 flashcards about: ${topic}` }
@@ -44,14 +47,31 @@ async function generateFlashcards(topic) {
     return response.json();
 }
 
-async function generateResponse(question) {
+async function generateAnswer(question) {
+    const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: model,
+            messages:[
+                { role: "system", content: "You answer questions without any markdown or extra text." },
+                { role: "user", content: question }
+            ]
+        })
+    }).then(res => res.json());
+    console.log(response.choices[0].message.content);
+}
+
+async function isFlashcardRequest(question) {
     const checkResponse = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model: "cohere/north-mini-code:free",
+            model: model,
             messages:[
                 { role: "system", content: "You can only answer with 'yes' or 'no'" },
                 { role: "user", content: "Is the following question a request for flashcards?: " + question }
@@ -59,29 +79,10 @@ async function generateResponse(question) {
         })
     })
 
-    const answer =  checkResponse.json().choices[0].message.content.trim().toLowerCase()
+    const data = await checkResponse.json()
+    const answer = data.choices[0].message.content.trim().toLowerCase();
     return answer === "yes"
 }
-
-inputField.addEventListener("keypress", async function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        inputField.blur()
-        inputField.disabled = true;
-        try {
-            const topic = inputField.value.trim();
-            const flashcards = await generateFlashcards(topic);
-            const cards = JSON.parse(flashcards.choices[0].message.content);
-            const deckId = await saveDeck(topic, cards);
-            console.log("Deck saved:", deckId);
-            inputField.value = "";
-            inputField.disabled = false;
-        } catch (error) {
-            alert("Error generating flashcards: " + error.message);
-            inputField.disabled = false;
-        }
-    }
-});
 
 askMnemoField.addEventListener("keypress", async function(event) {
     if (event.key === "Enter") {
@@ -90,6 +91,17 @@ askMnemoField.addEventListener("keypress", async function(event) {
         askMnemoField.disabled = true;
         try {
             const question = askMnemoField.value.trim();
+            const isFlashcard = await isFlashcardRequest(question);
+            if (isFlashcard) {
+                const flashcards = await generateFlashcards(question);
+                const cards = JSON.parse(flashcards.choices[0].message.content);
+                const deckId = await saveDeck(question, cards);
+                console.log("Deck saved:", deckId);
+            } else {
+                alert("Mnemo: " + question + " is not a request for flashcards.");
+            }
+            askMnemoField.value = "";
+            askMnemoField.disabled = false;
         } catch (error) {
             alert("Error generating response: " + error.message);
             askMnemoField.disabled = false;
@@ -99,10 +111,10 @@ askMnemoField.addEventListener("keypress", async function(event) {
 })
 
 document.addEventListener("keydown", function(event) {
-    if (event.key === "/" && document.activeElement !== inputField) {
+    if (event.key === "/" && document.activeElement !== askMnemoField) {
         event.preventDefault();
-        inputField.focus();
-        inputField.value = "";
+        askMnemoField.focus();
+        askMnemoField.value = "";
     }
 })
 
@@ -124,7 +136,6 @@ async function startReview() {
     dueCards = await getDueCards();
     currentCardIndex = 0;
 
-    document.getElementById("input-container").style.display = "none";
     document.getElementById("start-review-button").style.display = "none";
     document.getElementById("review-container").style.display = "block";
 
@@ -138,7 +149,6 @@ function showCard() {
         document.getElementById("card-front").textContent = "";
         document.getElementById("card-back").style.display = "none";
         document.getElementById("grade-buttons").style.display = "none";
-        document.getElementById('input-container').style.display = "flex";
         status.style.textAlign = "center";
         status.textContent = "Review complete!";
         return;
