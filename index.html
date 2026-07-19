@@ -16,16 +16,18 @@
             <input type="text" id="input-field" placeholder="press slash and start learning">
         </div>
         <br>
-        <p id="or">---or---</p>
-
+        <div id="ask-mnemo-container">
+            <input type="text" id="ask-mnemo-field" placeholder="ask mnemo...">
+        </div>
+        <br>
         <div style="display: flex; justify-content: center; align-items: center;">
             <button id="start-review-button">Start Review</button>
         </div>
 
         <div id="review-container" style="display:none;">
-            <p id="card-front"></p>
-            <p id="card-back" style="display:none;"></p>
-            <div id="grade-buttons" style="display:none;">
+            <p id="card-front" class="card"></p>
+            <p id="card-back" class="card" style="display:none;"></p>
+            <div id="grade-buttons" class="card" style="display:none;">
                 <button data-quality="0">Again</button>
                 <button data-quality="3">Hard</button>
                 <button data-quality="4">Good</button>

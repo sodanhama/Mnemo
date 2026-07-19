@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 
 * {
-    background-color: #1F2421; /*856084*/
+    background-color: #1F2421;
     color: #F2F4F3;
     font-family: 'Lato', sans-serif;
 }
@@ -14,7 +14,7 @@ footer {
     text-align: center;
 }
 
-#input-container {
+#input-container, #ask-mnemo-container {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
@@ -62,26 +62,18 @@ input::-webkit-input-placeholder{
     border-radius: 0.5rem;
     border: 0.125rem solid #fff;
 }
-#card-front {
+
+.card {
     background-color: #856084;
+}
+
+#card-front {
     text-align: center;
 }
 
 #review-status {
     background-color: #856084;
     text-align: right;
-}
-
-#card-front {
-    background-color: #856084;
-}
-
-#card-back {
-    background-color: #856084;
-}
-
-#grade-buttons {
-    background-color: #856084;
 }
 
 #or {

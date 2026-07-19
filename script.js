@@ -24,6 +24,7 @@ async function saveDeck(topic, cards) {
 }
 
 const inputField = document.getElementById("input-field");
+const askMnemoField = document.getElementById("ask-mnemo-field");
 
 async function generateFlashcards(topic) {
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
@@ -41,6 +42,25 @@ async function generateFlashcards(topic) {
     })
 
     return response.json();
+}
+
+async function generateResponse(question) {
+    const checkResponse = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "cohere/north-mini-code:free",
+            messages:[
+                { role: "system", content: "You can only answer with 'yes' or 'no'" },
+                { role: "user", content: "Is the following question a request for flashcards?: " + question }
+            ]
+        })
+    })
+
+    const answer =  checkResponse.json().choices[0].message.content.trim().toLowerCase()
+    return answer === "yes"
 }
 
 inputField.addEventListener("keypress", async function(event) {
@@ -62,6 +82,21 @@ inputField.addEventListener("keypress", async function(event) {
         }
     }
 });
+
+askMnemoField.addEventListener("keypress", async function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        askMnemoField.blur();
+        askMnemoField.disabled = true;
+        try {
+            const question = askMnemoField.value.trim();
+        } catch (error) {
+            alert("Error generating response: " + error.message);
+            askMnemoField.disabled = false;
+        }
+    }
+
+})
 
 document.addEventListener("keydown", function(event) {
     if (event.key === "/" && document.activeElement !== inputField) {
@@ -92,7 +127,6 @@ async function startReview() {
     document.getElementById("input-container").style.display = "none";
     document.getElementById("start-review-button").style.display = "none";
     document.getElementById("review-container").style.display = "block";
-    document.getElementById("or").style.display = "none";
 
     showCard();
 }
@@ -104,8 +138,8 @@ function showCard() {
         document.getElementById("card-front").textContent = "";
         document.getElementById("card-back").style.display = "none";
         document.getElementById("grade-buttons").style.display = "none";
-        document.getElementById('or').style.display = "flex";
         document.getElementById('input-container').style.display = "flex";
+        status.style.textAlign = "center";
         status.textContent = "Review complete!";
         return;
    }
