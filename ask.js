@@ -1,43 +1,137 @@
+import { db } from "./db.js";
+import { 
+    collection, addDoc, doc, getDoc, getDocs, query, orderBy, serverTimestamp, updateDoc
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
 const model = "cohere/north-mini-code:free";
 
-async function generateAnswer(question) {
+const sessionList = document.getElementById("session-list");
+const chatThread = document.getElementById("chat-thread");
+const askMnemoField = document.getElementById("ask-mnemo-field");
+const newSessionButton = document.getElementById("new-session-button");
+
+let currentSessionId = null;
+let currentMessages = [];
+
+async function generateAnswer(messages) {
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             model: model,
             messages: [
-                { role: "system", content: "You answer questions without markdown, formatting and extra text. Aim for a single paragraph." },
-                { role: "user", content: question }
+                { role: "system", content: "You answer questions without markdown or extra formatting. Keep replies concise." },
+                ...messages
             ]
         })
     }).then(res => res.json());
     return response.choices[0].message.content;
 }
 
-const askMnemoField = document.getElementById("ask-mnemo-field");
-const mnemoAnswerDiv = document.getElementById("mnemo-answer");
+async function createSession(firstMessage) {
+    const sessionRef = await addDoc(collection(db, "sessions"), {
+        title: firstMessage.slice(0, 50),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+    })
+    return sessionRef.id;
+}
+
+async function saveMessage(sessionId, role, content) {
+    await addDoc(collection(db, "sessions", sessionId, "messages"), {
+        role,
+        content,
+        createdAt: serverTimestamp()
+    });
+    await updateDoc(doc(db, "sessions", sessionId), {
+        updatedAt: serverTimestamp()
+    })
+}
+
+async function loadMessages(sessionId) {
+    const q = query(collection(db, "sessions", sessionId, "messages"), orderBy("createdAt", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => doc.data());
+}
+
+async function loadSessions() {
+    const q = query(collection(db, "sessions"), orderBy("updatedAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+function renderMessage(role, content) {
+    const bubble = document.createElement("p");
+    bubble.classList.add("chat-bubble", role === "user" ? "chat-user" : "chat-assistant");
+    bubble.textContent = content;
+    chatThread.appendChild(bubble);
+    chatThread.scrollTop = chatThread.scrollHeight;
+}
+
+async function renderSessionList() {
+    const sessions = await loadSessions();
+    sessionList.innerHTML = "";
+    sessions.forEach(session => {
+        const item = document.createElement("button");
+        item.classList.add("session-item");
+        item.textContent = session.title || "Untitled";
+        if (session.id === currentSessionId) item.classList.add("active");
+        item.addEventListener("click", () => openSession(session.id));
+        sessionList.appendChild(item);
+    })
+}
+
+async function openSession(sessionId) {
+    currentSessionId = sessionId;
+    currentMessages = await loadMessages(sessionId);
+    chatThread.innerHTML = "";
+    currentMessages.forEach(msg => renderMessage(msg.role, msg.content));
+    renderSessionList();
+}
+
+function startNewSession() {
+    currentSessionId = null;
+    currentMessages = [];
+    chatThread.innerHTML = "";
+    renderSessionList();
+    askMnemoField.focus();
+}
+
+newSessionButton.addEventListener("click", startNewSession);
 
 askMnemoField.addEventListener("keypress", async function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
-        askMnemoField.blur();
+
+        const question = askMnemoField.value.trim();
+        if (!question) return;
+
+        askMnemoField.value = "";
         askMnemoField.disabled = true;
+
         try {
-            const question = askMnemoField.value.trim();
-            const answer = await generateAnswer(question);
-            const mnemoAnswer = document.createElement("p");
-            mnemoAnswer.textContent = answer;
-            mnemoAnswerDiv.innerHTML = "";
-            mnemoAnswerDiv.appendChild(mnemoAnswer);
-            askMnemoField.value = "";
+            if (!currentSessionId) {
+                currentSessionId = await createSession(question);
+            }
+
+            renderMessage("user", question);
+            currentMessages.push({role: "user", content: question});
+            await saveMessage(currentSessionId, "user", question);
+
+            const answer = await generateAnswer(currentMessages);
+            renderMessage("assistant", answer);
+            currentMessages.push({role: "assistant", content: answer});
+            await saveMessage(currentSessionId, "assistant", answer);
+
+            renderSessionList();
+        }
+        catch (error) {
+            renderMessage("assistant", "Error generating response: " + error.message);
+        } finally {
             askMnemoField.disabled = false;
-        } catch (error) {
-            const mnemoAnswer = document.createElement("p");
-            mnemoAnswer.textContent = "Error generating response: " + error.message;
-            mnemoAnswerDiv.innerHTML = "";
-            mnemoAnswerDiv.appendChild(mnemoAnswer);
-            askMnemoField.disabled = false;
+            askMnemoField.focus();
         }
     }
 })
+
+renderSessionList();
