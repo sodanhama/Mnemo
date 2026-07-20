@@ -28,6 +28,7 @@ async function saveDeck(topic, cards) {
 }
 
 const askMnemoField = document.getElementById("ask-mnemo-field");
+const mnemoAnswerDiv = document.getElementById("mnemo-answer");
 
 async function generateFlashcards(topic) {
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
@@ -56,12 +57,12 @@ async function generateAnswer(question) {
         body: JSON.stringify({
             model: model,
             messages:[
-                { role: "system", content: "You answer questions without any markdown or extra text." },
+                { role: "system", content: "You answer questions without markdown, formatting and extra text. Aim for a single paragraph." },
                 { role: "user", content: question }
             ]
         })
     }).then(res => res.json());
-    console.log(response.choices[0].message.content);
+    return response.choices[0].message.content;
 }
 
 async function isFlashcardRequest(question) {
@@ -97,13 +98,26 @@ askMnemoField.addEventListener("keypress", async function(event) {
                 const cards = JSON.parse(flashcards.choices[0].message.content);
                 const deckId = await saveDeck(question, cards);
                 console.log("Deck saved:", deckId);
+                const mnemoAnswer = document.createElement("p");
+                mnemoAnswer.textContent = `Flashcards generated and saved for topic: "${question}".`;
+                mnemoAnswerDiv.id = "mnemo-answer";
+                mnemoAnswerDiv.appendChild(mnemoAnswer);
             } else {
-                alert("Mnemo: " + question + " is not a request for flashcards.");
+                const answer = await generateAnswer(question);
+                const mnemoAnswer = document.createElement("p");
+                mnemoAnswer.textContent = answer;
+                mnemoAnswerDiv.innerHTML = "";
+                mnemoAnswerDiv.id = "mnemo-answer";
+                mnemoAnswerDiv.appendChild(mnemoAnswer);
             }
             askMnemoField.value = "";
             askMnemoField.disabled = false;
         } catch (error) {
-            alert("Error generating response: " + error.message);
+            const mnemoAnswer = document.createElement("p");
+            mnemoAnswer.textContent = "Error generating response: " + error.message;
+            mnemoAnswerDiv.innerHTML = "";
+            mnemoAnswerDiv.id = "mnemo-answer";
+            mnemoAnswerDiv.appendChild(mnemoAnswer);
             askMnemoField.disabled = false;
         }
     }
