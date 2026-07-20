@@ -5,38 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mnemo</title>
     <link rel="stylesheet" href="./styles.css">
-    <script type="module" src="./script.js"></script></head>
+    <script type="module" src="./script.js"></script>
+    <script src="https://kit.fontawesome.com/20e7b179a7.js" crossorigin="anonymous"></script>
+</head>
 <body>
     <header>
-        <h1>Mnemo</h1>
+        <h1>mnemo</h1>
     </header>
-    <div id="main">
         <br>
-        <div id="ask-mnemo-container">
-            <input type="text" id="ask-mnemo-field" placeholder="ask mnemo...">
-            <div id="mnemo-answer">
+        <div id="main">
+            <div id="ask-mnemo-container">
+                <input type="text" id="ask-mnemo-field" placeholder="question">
+                <div id="mnemo-answer"></div>
+            </div>
+            <div id="generate-flashcard-container">
+                <input type="text" id="generate-deck-field" placeholder="create deck">
+                <div id="deck-answer"></div>
             </div>
         </div>
+
         <br>
-        <div style="display: flex; justify-content: center; align-items: center;">
-            <button id="start-review-button">Start Review</button>
+        <div id="start-review-container">
+            <button id="start-review-button">start review</button>
         </div>
 
         <div id="review-container" style="display:none;">
             <p id="card-front" class="card"></p>
             <p id="card-back" class="card" style="display:none;"></p>
             <div id="grade-buttons" class="card" style="display:none;">
-                <button data-quality="0">Again</button>
-                <button data-quality="3">Hard</button>
-                <button data-quality="4">Good</button>
-                <button data-quality="5">Easy</button>
+                <button data-quality="0">again</button>
+                <button data-quality="3">hard</button>
+                <button data-quality="4">good</button>
+                <button data-quality="5">easy</button>
             </div>
             <p id="review-status"></p>
         </div>
-    </div>
     <br>
     <footer>
-        <p>Made by sodanhama</p>
+        <p>made by sodanhama</p>
     </footer>
 </body>
 </html>

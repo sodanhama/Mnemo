@@ -1,18 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Maze&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
 
 * {
     background-color: #1F2421;
     color: #F2F4F3;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Lexend', sans-serif;
     text-align: center;
+}
+
+body {
     padding-left: 5rem;
     padding-right: 5rem;
+}
+
+header h1 {
+    font-family: "Rubik Maze", cursive;
+}
+
+#main {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 #ask-mnemo-container {
     display: grid;
     justify-content: center;
     gap: 0.5rem;
+}
+
+#start-review-container {
+    display: block;
+    justify-content: center;
+    padding-top: 1rem;
 }
 
 #mnemo-answer p {
@@ -27,9 +49,7 @@ input {
     background-color: #856084;
     border-radius: 0.5rem;
     border: none;
-    padding: 0.5rem;
     font-size: 1rem;
-    min-width: 15rem;
     text-align: center;
     padding-top: 1rem;
     padding-bottom: 1rem;

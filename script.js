@@ -29,6 +29,8 @@ async function saveDeck(topic, cards) {
 
 const askMnemoField = document.getElementById("ask-mnemo-field");
 const mnemoAnswerDiv = document.getElementById("mnemo-answer");
+const generateDeckField = document.getElementById("generate-deck-field");
+const deckAnswerDiv = document.getElementById("deck-answer");
 
 async function generateFlashcards(topic) {
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
@@ -122,6 +124,35 @@ askMnemoField.addEventListener("keypress", async function(event) {
         }
     }
 
+})
+
+generateDeckField.addEventListener("keypress", async function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        generateDeckField.blur();
+        generateDeckField.disabled = true;
+        try {
+            const topic = generateDeckField.value.trim();
+            const flashcards = await generateFlashcards(topic);
+            const cards = JSON.parse(flashcards.choices[0].message.content);
+            const deckId = await saveDeck(topic, cards);
+            console.log("Deck saved:", deckId);
+            const deckAnswer = document.createElement("p");
+            deckAnswer.textContent = `Flashcards generated and saved for topic: "${topic}".`;
+            deckAnswerDiv.innerHTML = "";
+            deckAnswerDiv.id = "deck-answer";
+            deckAnswerDiv.appendChild(deckAnswer);
+            generateDeckField.value = "";
+            generateDeckField.disabled = false;
+        } catch (error) {
+            const deckAnswer = document.createElement("p");
+            deckAnswer.textContent = "Error generating flashcards: " + error.message;
+            deckAnswerDiv.innerHTML = "";
+            deckAnswerDiv.id = "deck-answer";
+            deckAnswerDiv.appendChild(deckAnswer);
+            generateDeckField.disabled = false;
+        }
+    }
 })
 
 document.addEventListener("keydown", function(event) {
