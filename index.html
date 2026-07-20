@@ -3,44 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mnemo</title>
+    <title>mnemo</title>
     <link rel="stylesheet" href="./styles.css">
-    <script type="module" src="./script.js"></script>
     <script src="https://kit.fontawesome.com/20e7b179a7.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <header>
         <h1>mnemo</h1>
     </header>
-        <br>
-        <div id="main">
-            <div id="ask-mnemo-container">
-                <input type="text" id="ask-mnemo-field" placeholder="question">
-                <div id="mnemo-answer"></div>
-            </div>
-            <div id="generate-flashcard-container">
-                <input type="text" id="generate-deck-field" placeholder="create deck">
-                <div id="deck-answer"></div>
-            </div>
-        </div>
-
-        <br>
-        <div id="start-review-container">
-            <button id="start-review-button">start review</button>
-        </div>
-
-        <div id="review-container" style="display:none;">
-            <p id="card-front" class="card"></p>
-            <p id="card-back" class="card" style="display:none;"></p>
-            <div id="grade-buttons" class="card" style="display:none;">
-                <button data-quality="0">again</button>
-                <button data-quality="3">hard</button>
-                <button data-quality="4">good</button>
-                <button data-quality="5">easy</button>
-            </div>
-            <p id="review-status"></p>
-        </div>
-    <br>
+    <div id="landing-container">
+        <a href="review.html" class="landing-btn">start review</a>
+        <a href="ask.html" class="landing-btn">ask mnemo</a>
+        <a href="generate.html" class="landing-btn">generate deck</a>
+    </div>
     <footer>
         <p>made by sodanhama</p>
     </footer>
