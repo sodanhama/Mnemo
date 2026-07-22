@@ -138,13 +138,14 @@ renderSessionList();
 
 const generateFromSessionButton = document.getElementById("generate-from-session-button");
 
-async function generateFlashcardsFromSession() {
+async function generateFlashcardsFromSession(messages) {
     const transcript = messages.map(msg => `${msg.role}: ${msg.content}`).join("\n");
     
     const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+            model: model,
             messages: [
                 { role: "system", content: "You generate flashcards based on a conversation transcript. Respond ONLY with a JSON array like: [{\"front\":\"question text\",\"back\":\"answer text\"}]. No markdown, no explanation, no extra keys." },
                 { role: "user", content: `Generate 10 flashcards based on the key facts and concepts discussed in this conversation:\n\n${transcript}` }
