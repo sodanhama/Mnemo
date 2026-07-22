@@ -135,3 +135,64 @@ askMnemoField.addEventListener("keypress", async function (event) {
 })
 
 renderSessionList();
+
+const generateFromSessionButton = document.getElementById("generate-from-session-button");
+
+async function generateFlashcardsFromSession() {
+    const transcript = messages.map(msg => `${msg.role}: ${msg.content}`).join("\n");
+    
+    const response = await fetch("https://mnemo-ai-proxy.sodanhama.workers.dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            messages: [
+                { role: "system", content: "You generate flashcards based on a conversation transcript. Respond ONLY with a JSON array like: [{\"front\":\"question text\",\"back\":\"answer text\"}]. No markdown, no explanation, no extra keys." },
+                { role: "user", content: `Generate 10 flashcards based on the key facts and concepts discussed in this conversation:\n\n${transcript}` }
+            ]
+        })
+    }).then(res => res.json());
+
+    return JSON.parse(response.choices[0].message.content);
+}
+
+async function saveDeck(topic, cards) {
+    const deckRef = await addDoc(collection(db, "decks"), {
+        topic,
+        createdAt: serverTimestamp(),
+    })
+    for (const card of cards) {
+        await addDoc(collection(db, "decks", deckRef.id, "cards"), {
+            front: card.front,
+            back: card.back,
+            interval: 0,
+            repetition: 0,
+            easeFactor: 2.5,
+            dueDate: serverTimestamp(),
+            createdAt: serverTimestamp()
+        })
+    }
+
+    return deckRef.id;
+}
+
+generateFromSessionButton.addEventListener("click", async () => {
+    if (currentMessages.length === 0) {
+        renderMessage("assistant", "start a conversation first before generating flashcards");
+        return;
+    }
+
+    generateFromSessionButton.disabled = true;
+    generateFromSessionButton.textContent = "generating...";
+
+    try {
+        const cards = await generateFlashcardsFromSession(currentMessages);
+        const sessionTitle = document.querySelector(".session-item.active")?.textContent || "Session deck";
+        const deckId = await saveDeck(sessionTitle, cards);
+        renderMessage("assistant", `Flashcards generated and saved from this session (deck ID: ${deckId}).`);
+    } catch (error) {
+        renderMessage("assistant", "Error generating flashcards: " + error.message);
+    } finally {
+        generateFromSessionButton.disabled = false;
+        generateFromSessionButton.textContent = "generate flashcards from this session";
+    }
+});
